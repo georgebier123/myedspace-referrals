@@ -386,6 +386,7 @@ export default function CampaignReferPage() {
             <a href={`/${campaignSlug}/terms`} className="text-[#3533ff] hover:underline">
               Terms & Conditions
             </a>
+            {' '}and you consent to receiving marketing communications from MyEdSpace
           </p>
         </div>
       </div>
