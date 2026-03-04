@@ -54,6 +54,7 @@ interface Campaign {
   hubspot_portal_id: string | null;
   hubspot_form_guid: string | null;
   hubspot_friend_form_guid: string | null;
+  slack_notifications: boolean;
   copy: CampaignCopy;
   standard_fields: StandardFormFields;
   custom_fields: CustomFormField[];
@@ -459,6 +460,21 @@ export default function CampaignEditorPage() {
               </label>
               <p className="text-sm text-[#101626]/60 mt-1">
                 Inactive campaigns won&apos;t accept new registrations
+              </p>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.slack_notifications ?? true}
+                  onChange={(e) => updateFormData({ slack_notifications: e.target.checked })}
+                  className="w-5 h-5"
+                />
+                <span className="font-bold text-[#101626] uppercase">Slack Notifications</span>
+              </label>
+              <p className="text-sm text-[#101626]/60 mt-1">
+                Send Slack alerts for new referral signups and qualified referrals
               </p>
             </div>
 

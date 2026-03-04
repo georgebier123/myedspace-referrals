@@ -141,6 +141,7 @@ export async function createCampaign(campaign: {
       hubspot_portal_id: campaign.hubspot_portal_id || null,
       hubspot_form_guid: campaign.hubspot_form_guid || null,
       hubspot_friend_form_guid: null,
+      slack_notifications: true,
       copy: { ...defaultCampaignCopy, ...campaign.copy },
       standard_fields: { ...defaultStandardFields, ...campaign.standard_fields },
       custom_fields: campaign.custom_fields || [],
@@ -169,6 +170,7 @@ export async function updateCampaign(
     hubspot_portal_id: string | null;
     hubspot_form_guid: string | null;
     hubspot_friend_form_guid: string | null;
+    slack_notifications: boolean;
     copy: CampaignCopy;
     standard_fields: StandardFormFields;
     custom_fields: CustomFormField[];
@@ -190,6 +192,7 @@ export async function updateCampaign(
   if (updates.hubspot_portal_id !== undefined) updateData.hubspot_portal_id = updates.hubspot_portal_id;
   if (updates.hubspot_form_guid !== undefined) updateData.hubspot_form_guid = updates.hubspot_form_guid;
   if (updates.hubspot_friend_form_guid !== undefined) updateData.hubspot_friend_form_guid = updates.hubspot_friend_form_guid;
+  if (updates.slack_notifications !== undefined) updateData.slack_notifications = updates.slack_notifications;
   if (updates.copy !== undefined) updateData.copy = updates.copy;
   if (updates.standard_fields !== undefined) updateData.standard_fields = updates.standard_fields;
   if (updates.custom_fields !== undefined) updateData.custom_fields = updates.custom_fields;
@@ -301,6 +304,7 @@ function mapCampaignFromDb(row: Record<string, unknown>): Campaign {
     hubspot_portal_id: row.hubspot_portal_id as string | null,
     hubspot_form_guid: row.hubspot_form_guid as string | null,
     hubspot_friend_form_guid: row.hubspot_friend_form_guid as string | null,
+    slack_notifications: (row.slack_notifications as boolean) ?? true,
     copy,
     standard_fields: row.standard_fields as StandardFormFields,
     custom_fields: row.custom_fields as CustomFormField[],

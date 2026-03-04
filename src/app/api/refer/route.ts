@@ -69,22 +69,24 @@ export async function POST(request: NextRequest) {
     // Get campaign for HubSpot config and booking URL
     const campaign = await getCampaignById(effectiveCampaignId);
 
-    // Submit to HubSpot (truly non-blocking - fire and forget)
-    submitReferredFriendToHubSpot(
+    // Submit to HubSpot (must be awaited in serverless environments)
+    const hubspotResult = await submitReferredFriendToHubSpot(
       actualEmail,
       actualName,
       actualPhone,
       referrer.email,
       campaign?.hubspot_portal_id || undefined,
       campaign?.hubspot_friend_form_guid || campaign?.hubspot_form_guid || undefined
-    ).then(result => {
-      if (!result.success) {
-        console.error('HubSpot submission failed:', result.error);
-      }
-    }).catch(console.error);
+    );
 
-    // Send Slack notification (non-blocking - fire and forget)
-    notifyNewReferral(referrer.name, actualName, actualEmail).catch(console.error);
+    if (!hubspotResult.success) {
+      console.error('HubSpot submission failed:', hubspotResult.error);
+    }
+
+    // Send Slack notification (if enabled for campaign)
+    if (campaign?.slack_notifications !== false) {
+      notifyNewReferral(referrer.name, actualName, actualEmail).catch(console.error);
+    }
 
     // Build redirect URL with pre-filled form data
     // Use campaign-specific URL if set, otherwise fall back to env var or default
@@ -107,6 +109,10 @@ export async function POST(request: NextRequest) {
       // Legacy support
       redirectUrl: redirectUrl.toString(),
       message: 'Thank you for signing up!',
+      hubspot: {
+        submitted: hubspotResult.success,
+        error: hubspotResult.error || null,
+      },
     });
   } catch (error) {
     console.error('Referral submission error:', error);

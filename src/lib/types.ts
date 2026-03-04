@@ -49,6 +49,7 @@ export interface Campaign {
   hubspot_portal_id: string | null;
   hubspot_form_guid: string | null;
   hubspot_friend_form_guid: string | null;
+  slack_notifications: boolean;
   copy: CampaignCopy;
   standard_fields: StandardFormFields;
   custom_fields: CustomFormField[];

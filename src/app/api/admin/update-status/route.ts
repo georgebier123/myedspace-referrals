@@ -3,6 +3,7 @@ import { validateAdminPassword } from '@/lib/auth';
 import { updateReferralStatus, getReferralById } from '@/lib/data';
 import { notifyReferralQualified } from '@/lib/slack';
 import { updateReferrerStatus } from '@/lib/hubspot';
+import { getCampaignById } from '@/lib/campaigns';
 import { ReferralStatus } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -54,12 +55,15 @@ export async function POST(request: NextRequest) {
 
       case 'mark_qualified':
         updates = { status: 'qualified' };
-        // Send Slack notification
-        await notifyReferralQualified(
-          referral.referrer_name,
-          referral.referrer_email,
-          referral.referred_name
-        );
+        // Send Slack notification (if enabled for campaign)
+        const campaign = await getCampaignById(referral.campaign_id);
+        if (campaign?.slack_notifications !== false) {
+          await notifyReferralQualified(
+            referral.referrer_name,
+            referral.referrer_email,
+            referral.referred_name
+          );
+        }
         // Update HubSpot contact property to trigger email workflow
         const hubspotResult = await updateReferrerStatus(
           referral.referrer_email,
