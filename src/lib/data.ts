@@ -382,6 +382,40 @@ export async function getReferralsByReferrer(email: string, campaignId?: string)
   }));
 }
 
+export async function getReferralsByFriendEmail(email: string): Promise<Referral[]> {
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase
+    .from('referrals')
+    .select('*')
+    .eq('referred_email', email.toLowerCase())
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching referrals by friend email:', error);
+    return [];
+  }
+
+  return (data || []).map(row => ({
+    id: row.id,
+    referrer_email: row.referrer_email,
+    referrer_name: row.referrer_name,
+    referred_email: row.referred_email,
+    referred_name: row.referred_name,
+    referred_phone: row.referred_phone || '',
+    referred_child_grade: row.referred_child_grade || '',
+    signup_date: row.signup_date,
+    purchase_date: row.purchase_date || null,
+    reward_eligible_date: row.reward_eligible_date || null,
+    status: row.status as ReferralStatus,
+    reward_issued_date: row.reward_issued_date || null,
+    notes: row.notes || '',
+    campaign_id: row.campaign_id || DEFAULT_CAMPAIGN_ID,
+    custom_fields: row.custom_fields || {},
+    created_at: row.created_at,
+  }));
+}
+
 export async function getReferralById(id: string): Promise<Referral | null> {
   const supabase = getSupabase();
 
