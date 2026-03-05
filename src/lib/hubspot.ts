@@ -15,7 +15,8 @@ interface HubSpotFormSubmission {
 export async function submitToHubSpotForm(
   fields: HubSpotFormSubmission,
   overridePortalId?: string,
-  overrideFormGuid?: string
+  overrideFormGuid?: string,
+  campaignContext?: { name: string; slug: string; pageName: string }
 ): Promise<{ success: boolean; error?: string }> {
   const portalId = overridePortalId || process.env.HUBSPOT_PORTAL_ID;
   const formGuid = overrideFormGuid || process.env.HUBSPOT_FORM_GUID;
@@ -35,11 +36,15 @@ export async function submitToHubSpotForm(
       value: value as string,
     }));
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://referrals.myedspace.com';
+  const pageUri = campaignContext ? `${baseUrl}/${campaignContext.slug}` : baseUrl;
+  const pageName = campaignContext ? `${campaignContext.name} - ${campaignContext.pageName}` : 'Referral Registration';
+
   const payload = {
     fields: formattedFields,
     context: {
-      pageUri: process.env.NEXT_PUBLIC_BASE_URL || 'https://referrals.myedspace.com',
-      pageName: 'Referral Registration',
+      pageUri,
+      pageName,
     },
   };
 
@@ -71,7 +76,8 @@ export async function submitReferrerToHubSpot(
   name: string,
   referralLink: string,
   portalId?: string,
-  formGuid?: string
+  formGuid?: string,
+  campaignContext?: { name: string; slug: string }
 ): Promise<{ success: boolean; error?: string }> {
   const nameParts = name.split(' ');
   const firstname = nameParts[0] || '';
@@ -82,7 +88,7 @@ export async function submitReferrerToHubSpot(
     firstname,
     lastname,
     referral_link: referralLink,
-  }, portalId, formGuid);
+  }, portalId, formGuid, campaignContext ? { ...campaignContext, pageName: 'Referrer Registration' } : undefined);
 }
 
 // Submit referred friend to HubSpot
@@ -92,7 +98,8 @@ export async function submitReferredFriendToHubSpot(
   phone: string,
   referrerEmail: string,
   portalId?: string,
-  formGuid?: string
+  formGuid?: string,
+  campaignContext?: { name: string; slug: string }
 ): Promise<{ success: boolean; error?: string }> {
   const nameParts = name.split(' ');
   const firstname = nameParts[0] || '';
@@ -104,7 +111,7 @@ export async function submitReferredFriendToHubSpot(
     lastname,
     phone,
     referrers_email: referrerEmail,
-  }, portalId, formGuid);
+  }, portalId, formGuid, campaignContext ? { ...campaignContext, pageName: 'Friend Signup' } : undefined);
 }
 
 // ================== CONTACTS API (requires Private App token) ==================
